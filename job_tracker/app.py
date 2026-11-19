@@ -37,9 +37,50 @@ def dashboard():
         recent_applications=recent_applications
     )
 
-@app.route('/companies')
+@app.route('/companies', methods=['GET', 'POST'])
 def companies():
-    return 'Companies page coming next!'
+    if request.method == 'POST':
+        company_id = request.form.get('company_id')
+        company_name = request.form.get('company_name', '').strip()
+        industry = request.form.get('industry', '').strip() or None
+        website = request.form.get('website', '').strip() or None
+        city = request.form.get('city', '').strip() or None
+        state = request.form.get('state', '').strip() or None
+        notes = request.form.get('notes', '').strip() or None
+
+        if not company_name:
+            flash('Company name is required.', 'danger')
+            return redirect(url_for('companies'))
+
+        if company_id:
+            execute_write('''
+                UPDATE companies
+                SET company_name = %s, industry = %s, website = %s, city = %s, state = %s, notes = %s
+                WHERE company_id = %s
+            ''', (company_name, industry, website, city, state, notes, company_id))
+            flash('Company updated successfully.', 'success')
+        else:
+            execute_write('''
+                INSERT INTO companies (company_name, industry, website, city, state, notes)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            ''', (company_name, industry, website, city, state, notes))
+            flash('Company added successfully.', 'success')
+
+        return redirect(url_for('companies'))
+
+    edit_id = request.args.get('edit_id')
+    edit_company = None
+    if edit_id:
+        edit_company = query_one('SELECT * FROM companies WHERE company_id = %s', (edit_id,))
+
+    all_companies = query_all('SELECT * FROM companies ORDER BY company_name')
+    return render_template('companies.html', companies=all_companies, edit_company=edit_company)
+
+@app.route('/companies/delete/<int:company_id>', methods=['POST'])
+def delete_company(company_id):
+    execute_write('DELETE FROM companies WHERE company_id = %s', (company_id,))
+    flash('Company deleted.', 'info')
+    return redirect(url_for('companies'))
 
 @app.route('/jobs')
 def jobs():

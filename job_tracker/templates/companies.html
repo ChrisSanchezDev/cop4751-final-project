@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold mb-0">Companies</h2>
+</div>
+
+<div class="card form-card p-4 mb-4">
+    <h5 class="fw-bold mb-3">
+        {% if edit_company %}Edit Company (ID: {{ edit_company.company_id }}){% else %}Add New Company{% endif %}
+    </h5>
+    <form method="POST" action="{{ url_for('companies') }}">
+        {% if edit_company %}
+            <input type="hidden" name="company_id" value="{{ edit_company.company_id }}">
+        {% endif %}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Company Name *</label>
+                <input type="text" name="company_name" class="form-control" required value="{{ edit_company.company_name if edit_company else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Industry</label>
+                <input type="text" name="industry" class="form-control" value="{{ edit_company.industry or '' if edit_company else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Website</label>
+                <input type="text" name="website" class="form-control" value="{{ edit_company.website or '' if edit_company else '' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">City</label>
+                <input type="text" name="city" class="form-control" value="{{ edit_company.city or '' if edit_company else '' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">State</label>
+                <input type="text" name="state" class="form-control" value="{{ edit_company.state or '' if edit_company else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Notes</label>
+                <input type="text" name="notes" class="form-control" value="{{ edit_company.notes or '' if edit_company else '' }}">
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-indigo">
+                {% if edit_company %}Update Company{% else %}Save Company{% endif %}
+            </button>
+            {% if edit_company %}
+                <a href="{{ url_for('companies') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="card p-4">
+    <h5 class="fw-bold mb-3">All Companies ({{ companies|length }})</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Company Name</th><th>Industry</th><th>Location</th>
+                    <th>Website</th><th>Notes</th><th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>{{ company.company_id }}</td>
+                    <td class="fw-semibold">{{ company.company_name }}</td>
+                    <td>{{ company.industry or '-' }}</td>
+                    <td>{{ company.city or '' }}{% if company.city and company.state %}, {% endif %}{{ company.state or '' }}</td>
+                    <td>{{ company.website or '-' }}</td>
+                    <td class="text-muted small">{{ company.notes or '-' }}</td>
+                    <td class="text-end text-nowrap">
+                        <a href="{{ url_for('companies', edit_id=company.company_id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="POST" action="{{ url_for('delete_company', company_id=company.company_id) }}" class="d-inline" onsubmit="return confirm('Delete this company and its related records?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted">No companies found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
