@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="fw-bold mb-3">Job Skill Matcher</h2>
+
+<div class="card form-card p-4 mb-4">
+    <h5 class="fw-bold mb-2">Enter Your Skills</h5>
+    <p class="text-muted small mb-3">Type your skills separated by commas to rank jobs based on their JSON skill requirements.</p>
+    <form method="POST" action="{{ url_for('job_match') }}" class="row g-2">
+        <div class="col-md-9"><input type="text" name="skills" class="form-control form-control-lg" placeholder="Python, SQL, Git, Tableau..." value="{{ skills_input }}" required></div>
+        <div class="col-md-3 d-grid"><button type="submit" class="btn btn-indigo btn-lg">Calculate Match</button></div>
+    </form>
+</div>
+
+{% if request.method == 'POST' %}
+<div class="card p-4">
+    <h5 class="fw-bold mb-3">Matching Jobs ({{ results|length }})</h5>
+    {% for result in results %}
+    <div class="border rounded p-3 mb-3 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div><span class="fw-bold fs-5">{{ loop.index }}. {{ result.job_title }}</span> <span class="text-muted">at {{ result.company_name }}</span> <span class="badge bg-light text-dark border ms-2">{{ result.job_type or '-' }}</span></div>
+            <div class="text-end"><span class="fs-4 fw-bold text-primary">{{ result.match_pct }}%</span> <span class="text-muted small">({{ result.matched_count }}/{{ result.total_skills }} skills)</span></div>
+        </div>
+        <div class="progress mb-2" style="height: 8px;"><div class="progress-bar bg-success" role="progressbar" style="width: {{ result.match_pct }}%;"></div></div>
+        <div class="small">
+            <span class="text-success fw-semibold">Matched:</span> {{ result.matched_skills | join(', ') if result.matched_skills else 'None' }}
+            {% if result.missing_skills %}<span class="text-danger fw-semibold ms-3">Missing:</span> {{ result.missing_skills | join(', ') }}{% endif %}
+        </div>
+    </div>
+    {% else %}<p class="text-muted mb-0">No jobs with JSON skill requirements found in the database.</p>{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

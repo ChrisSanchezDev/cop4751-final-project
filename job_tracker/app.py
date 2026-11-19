@@ -227,13 +227,112 @@ def delete_application(application_id):
     flash('Application deleted.', 'info')
     return redirect(url_for('applications'))
 
-@app.route('/contacts')
+@app.route('/contacts', methods=['GET', 'POST'])
 def contacts():
-    return 'Contacts page coming next!'
+    if request.method == 'POST':
+        contact_id = request.form.get('contact_id')
+        company_id = request.form.get('company_id')
+        contact_name = request.form.get('contact_name', '').strip()
+        title = request.form.get('title', '').strip() or None
+        email = request.form.get('email', '').strip() or None
+        phone = request.form.get('phone', '').strip() or None
+        linkedin_url = request.form.get('linkedin_url', '').strip() or None
+        notes = request.form.get('notes', '').strip() or None
 
-@app.route('/job-match')
+        if not company_id or not contact_name:
+            flash('Company and Contact Name are required.', 'danger')
+            return redirect(url_for('contacts'))
+
+        if contact_id:
+            execute_write('''
+                UPDATE contacts
+                SET company_id = %s, contact_name = %s, title = %s, email = %s,
+                    phone = %s, linkedin_url = %s, notes = %s
+                WHERE contact_id = %s
+            ''', (company_id, contact_name, title, email, phone, linkedin_url, notes, contact_id))
+            flash('Contact updated successfully.', 'success')
+        else:
+            execute_write('''
+                INSERT INTO contacts (company_id, contact_name, title, email, phone, linkedin_url, notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', (company_id, contact_name, title, email, phone, linkedin_url, notes))
+            flash('Contact added successfully.', 'success')
+
+        return redirect(url_for('contacts'))
+
+    edit_id = request.args.get('edit_id')
+    edit_contact = None
+    if edit_id:
+        edit_contact = query_one('SELECT * FROM contacts WHERE contact_id = %s', (edit_id,))
+
+    all_contacts = query_all('''
+        SELECT ct.*, c.company_name
+        FROM contacts ct
+        INNER JOIN companies c ON ct.company_id = c.company_id
+        ORDER BY ct.contact_name
+    ''')
+    all_companies = query_all('SELECT company_id, company_name FROM companies ORDER BY company_name')
+    return render_template('contacts.html', contacts=all_contacts, companies=all_companies, edit_contact=edit_contact)
+
+@app.route('/contacts/delete/<int:contact_id>', methods=['POST'])
+def delete_contact(contact_id):
+    execute_write('DELETE FROM contacts WHERE contact_id = %s', (contact_id,))
+    flash('Contact deleted.', 'info')
+    return redirect(url_for('contacts'))
+
+@app.route('/job-match', methods=['GET', 'POST'])
 def job_match():
-    return 'Job Match page coming next!'
+    skills_input = ''
+    results = []
+
+    if request.method == 'POST':
+        skills_input = request.form.get('skills', '').strip()
+        user_skills = {skill.strip().lower() for skill in skills_input.split(',') if skill.strip()}
+
+        if user_skills:
+            jobs_with_reqs = query_all('''
+                SELECT j.job_id, j.job_title, j.job_type, j.salary_min, j.salary_max,
+                       j.requirements, c.company_name
+                FROM jobs j
+                INNER JOIN companies c ON j.company_id = c.company_id
+                WHERE j.requirements IS NOT NULL
+            ''')
+
+            for job in jobs_with_reqs:
+                try:
+                    raw_requirements = json.loads(job['requirements'])
+                except (TypeError, ValueError):
+                    continue
+
+                if isinstance(raw_requirements, dict):
+                    job_skills = raw_requirements.get('required_skills', [])
+                elif isinstance(raw_requirements, list):
+                    job_skills = raw_requirements
+                else:
+                    job_skills = []
+
+                job_skills = [skill for skill in job_skills if isinstance(skill, str)]
+                if not job_skills:
+                    continue
+
+                matched = [skill for skill in job_skills if skill.lower() in user_skills]
+                missing = [skill for skill in job_skills if skill.lower() not in user_skills]
+                match_pct = round((len(matched) / len(job_skills)) * 100)
+
+                results.append({
+                    'job_title': job['job_title'],
+                    'company_name': job['company_name'],
+                    'job_type': job['job_type'],
+                    'match_pct': match_pct,
+                    'matched_count': len(matched),
+                    'total_skills': len(job_skills),
+                    'matched_skills': matched,
+                    'missing_skills': missing
+                })
+
+            results.sort(key=lambda result: result['match_pct'], reverse=True)
+
+    return render_template('job_match.html', skills_input=skills_input, results=results)
 
 if __name__ == '__main__':
     app.run(debug=True)
