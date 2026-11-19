@@ -67,7 +67,7 @@
                     <td>{% if application.interview_data %}<span class="code-pill">{{ application.interview_data }}</span>{% else %}-{% endif %}</td>
                     <td class="text-end text-nowrap">
                         <a href="{{ url_for('applications', edit_id=application.application_id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form method="POST" action="{{ url_for('delete_application', application_id=application.application_id) }}" class="d-inline" onsubmit="return confirm('Delete this application?');">
+                        <form method="POST" action="{{ url_for('delete_application', application_id=application.application_id) }}" class="d-inline" onsubmit="return confirm('This permanently deletes the application. Continue?');">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                         </form>
                     </td>

@@ -71,7 +71,7 @@
                     <td class="text-muted small">{{ company.notes or '-' }}</td>
                     <td class="text-end text-nowrap">
                         <a href="{{ url_for('companies', edit_id=company.company_id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form method="POST" action="{{ url_for('delete_company', company_id=company.company_id) }}" class="d-inline" onsubmit="return confirm('Delete this company and its related records?');">
+                        <form method="POST" action="{{ url_for('delete_company', company_id=company.company_id) }}" class="d-inline" onsubmit="return confirm('This permanently deletes the company and its related records. Continue?');">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                         </form>
                     </td>
