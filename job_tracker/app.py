@@ -109,19 +109,8 @@ def jobs():
 
         requirements_json = None
         if req_input:
-            if req_input.startswith('['):
-                try:
-                    parsed = json.loads(req_input)
-                    if not isinstance(parsed, list):
-                        flash('Requirements JSON must be an array of skills.', 'danger')
-                        return redirect(url_for('jobs'))
-                    requirements_json = json.dumps(parsed)
-                except ValueError:
-                    flash('Invalid JSON format in requirements.', 'danger')
-                    return redirect(url_for('jobs'))
-            else:
-                skill_list = [skill.strip() for skill in req_input.split(',') if skill.strip()]
-                requirements_json = json.dumps(skill_list)
+            skill_list = [skill.strip() for skill in req_input.split(',') if skill.strip()]
+            requirements_json = json.dumps(skill_list)
 
         if job_id:
             execute_write('''
@@ -144,6 +133,13 @@ def jobs():
     edit_job = None
     if edit_id:
         edit_job = query_one('SELECT * FROM jobs WHERE job_id = %s', (edit_id,))
+        if edit_job and edit_job.get('requirements'):
+            try:
+                saved_skills = json.loads(edit_job['requirements'])
+            except (TypeError, ValueError):
+                saved_skills = None
+            if isinstance(saved_skills, list):
+                edit_job['requirements'] = ', '.join(str(skill) for skill in saved_skills)
 
     all_jobs = query_all('''
         SELECT j.*, c.company_name
@@ -169,20 +165,54 @@ def applications():
         status = request.form.get('status', 'Applied')
         resume_version = request.form.get('resume_version', '').strip() or None
         cover_letter_sent = request.form.get('cover_letter_sent') == 'on'
-        interview_input = request.form.get('interview_data', '').strip()
+        interview_rounds_raw = request.form.get('interview_rounds', '').strip()
+        interviewers_input = request.form.get('interviewers', '').strip()
+        technical_questions_input = request.form.get('technical_questions', '').strip()
+        feedback = request.form.get('feedback', '').strip()
+        next_steps = request.form.get('next_steps', '').strip()
+        rating_raw = request.form.get('rating', '').strip()
 
         if not job_id or not application_date:
             flash('Job and Application Date are required.', 'danger')
             return redirect(url_for('applications'))
 
         interview_json = None
-        if interview_input:
-            try:
-                parsed = json.loads(interview_input)
-                interview_json = json.dumps(parsed)
-            except ValueError:
-                flash('Interview data must be valid JSON.', 'danger')
-                return redirect(url_for('applications'))
+        if any((interview_rounds_raw, interviewers_input, technical_questions_input, feedback, next_steps, rating_raw)):
+            interview_rounds = None
+            if interview_rounds_raw:
+                if not interview_rounds_raw.isdigit():
+                    flash('Interview rounds must be a whole number.', 'danger')
+                    return redirect(url_for('applications'))
+                interview_rounds = int(interview_rounds_raw)
+
+            rating = None
+            if rating_raw:
+                if not rating_raw.isdigit():
+                    flash('Interview rating must be a whole number.', 'danger')
+                    return redirect(url_for('applications'))
+                rating = int(rating_raw)
+                if rating < 1 or rating > 5:
+                    flash('Interview rating must be between 1 and 5.', 'danger')
+                    return redirect(url_for('applications'))
+
+            interview_data = {}
+            if interview_rounds is not None:
+                interview_data['interview_rounds'] = interview_rounds
+            if interviewers_input:
+                interview_data['interviewers'] = [
+                    interviewer.strip() for interviewer in interviewers_input.split(',') if interviewer.strip()
+                ]
+            if technical_questions_input:
+                interview_data['technical_questions'] = [
+                    question.strip() for question in technical_questions_input.split(',') if question.strip()
+                ]
+            if feedback:
+                interview_data['feedback'] = feedback
+            if next_steps:
+                interview_data['next_steps'] = next_steps
+            if rating is not None:
+                interview_data['rating'] = rating
+            interview_json = json.dumps(interview_data)
 
         if application_id:
             execute_write('''
@@ -205,6 +235,26 @@ def applications():
     edit_app = None
     if edit_id:
         edit_app = query_one('SELECT * FROM applications WHERE application_id = %s', (edit_id,))
+    interview_form = {
+        'interview_rounds': '',
+        'interviewers': '',
+        'technical_questions': '',
+        'feedback': '',
+        'next_steps': '',
+        'rating': ''
+    }
+    if edit_app and edit_app.get('interview_data'):
+        try:
+            saved_interview = json.loads(edit_app['interview_data'])
+        except (TypeError, ValueError):
+            saved_interview = {}
+        if isinstance(saved_interview, dict):
+            interview_form['interview_rounds'] = saved_interview.get('interview_rounds', '')
+            interview_form['interviewers'] = ', '.join(saved_interview.get('interviewers', []))
+            interview_form['technical_questions'] = ', '.join(saved_interview.get('technical_questions', []))
+            interview_form['feedback'] = saved_interview.get('feedback', '')
+            interview_form['next_steps'] = saved_interview.get('next_steps', '')
+            interview_form['rating'] = saved_interview.get('rating', '')
 
     all_applications = query_all('''
         SELECT a.*, j.job_title, c.company_name
@@ -219,7 +269,7 @@ def applications():
         INNER JOIN companies c ON j.company_id = c.company_id
         ORDER BY c.company_name, j.job_title
     ''')
-    return render_template('applications.html', applications=all_applications, jobs=all_jobs, edit_app=edit_app)
+    return render_template('applications.html', applications=all_applications, jobs=all_jobs, edit_app=edit_app, interview_form=interview_form)
 
 @app.route('/applications/delete/<int:application_id>', methods=['POST'])
 def delete_application(application_id):

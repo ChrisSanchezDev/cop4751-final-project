@@ -40,7 +40,7 @@
                 {% for contact in contacts %}
                 <tr>
                     <td>{{ contact.contact_id }}</td><td class="fw-semibold">{{ contact.contact_name }}</td><td>{{ contact.company_name }}</td>
-                    <td>{{ contact.title or '-' }}</td><td>{{ contact.email or 'NULL' }}</td><td>{{ contact.phone or '-' }}</td><td class="text-muted small">{{ contact.notes or '-' }}</td>
+                    <td>{{ contact.title or '-' }}</td><td>{{ contact.email or '-' }}</td><td>{{ contact.phone or '-' }}</td><td class="text-muted small">{{ contact.notes or '-' }}</td>
                     <td class="text-end text-nowrap">
                         <a href="{{ url_for('contacts', edit_id=contact.contact_id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                         <form method="POST" action="{{ url_for('delete_contact', contact_id=contact.contact_id) }}" class="d-inline" onsubmit="return confirm('This permanently deletes the contact. Continue?');"><button type="submit" class="btn btn-sm btn-outline-danger">Delete</button></form>

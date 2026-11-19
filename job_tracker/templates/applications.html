@@ -41,9 +41,29 @@
                     <label class="form-check-label fw-semibold" for="coverCheck">Cover Letter Sent</label>
                 </div>
             </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Interview Rounds</label>
+                <input type="number" min="0" name="interview_rounds" class="form-control" value="{{ interview_form.interview_rounds }}">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Interviewers</label>
+                <input type="text" name="interviewers" class="form-control" placeholder="Names separated by commas" value="{{ interview_form.interviewers }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Rating</label>
+                <input type="number" min="1" max="5" name="rating" class="form-control" placeholder="1-5" value="{{ interview_form.rating }}">
+            </div>
             <div class="col-md-12">
-                <label class="form-label fw-semibold">Interview Data (JSON Object)</label>
-                <input type="text" name="interview_data" class="form-control" placeholder='e.g. {"interview_rounds": 2, "feedback": "Strong SQL skills"}' value="{{ edit_app.interview_data or '' if edit_app else '' }}">
+                <label class="form-label fw-semibold">Technical Questions</label>
+                <input type="text" name="technical_questions" class="form-control" placeholder="Questions separated by commas" value="{{ interview_form.technical_questions }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Feedback</label>
+                <textarea name="feedback" class="form-control" rows="3" placeholder="Record interviewer feedback">{{ interview_form.feedback }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Next Steps</label>
+                <textarea name="next_steps" class="form-control" rows="3" placeholder="Record follow-up actions">{{ interview_form.next_steps }}</textarea>
             </div>
         </div>
         <div class="mt-3">

@@ -48,8 +48,8 @@
                 <input type="text" name="job_url" class="form-control" value="{{ edit_job.job_url or '' if edit_job else '' }}">
             </div>
             <div class="col-md-12">
-                <label class="form-label fw-semibold">Required Skills (JSON Array or Comma-Separated)</label>
-                <input type="text" name="requirements" class="form-control" placeholder='e.g. ["Python", "SQL", "Git"] or Python, SQL, Git' value="{{ edit_job.requirements or '' if edit_job else '' }}">
+                <label class="form-label fw-semibold">Required Skills (Comma-Separated)</label>
+                <input type="text" name="requirements" class="form-control" placeholder="e.g. Python, SQL, Git" value="{{ edit_job.requirements or '' if edit_job else '' }}">
             </div>
         </div>
         <div class="mt-3">
@@ -63,7 +63,7 @@
     <h5 class="fw-bold mb-3">All Jobs ({{ jobs|length }})</h5>
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead><tr><th>ID</th><th>Job Title</th><th>Company</th><th>Type</th><th>Salary Range</th><th>Date Posted</th><th>Requirements</th><th class="text-end">Actions</th></tr></thead>
+            <thead><tr><th>ID</th><th>Job Title</th><th>Company</th><th>Type</th><th>Salary Range</th><th>Date Posted</th><th>Job URL</th><th>Requirements</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
                 {% for job in jobs %}
                 <tr>
@@ -71,6 +71,11 @@
                     <td><span class="badge bg-light text-dark border">{{ job.job_type or '-' }}</span></td>
                     <td>{% if job.salary_min is not none and job.salary_max is not none %}${{ "{:,}".format(job.salary_min) }} - ${{ "{:,}".format(job.salary_max) }}{% else %}-{% endif %}</td>
                     <td>{{ job.date_posted or '-' }}</td>
+                    <td>
+                        {% if job.job_url %}
+                        <a href="{{ job.job_url }}" target="_blank" rel="noopener noreferrer">{{ job.job_url }}</a>
+                        {% else %}-{% endif %}
+                    </td>
                     <td>{% if job.requirements %}<span class="code-pill">{{ job.requirements }}</span>{% else %}-{% endif %}</td>
                     <td class="text-end text-nowrap">
                         <a href="{{ url_for('jobs', edit_id=job.job_id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
@@ -79,7 +84,7 @@
                         </form>
                     </td>
                 </tr>
-                {% else %}<tr><td colspan="8" class="text-center text-muted">No jobs found.</td></tr>{% endfor %}
+                {% else %}<tr><td colspan="9" class="text-center text-muted">No jobs found.</td></tr>{% endfor %}
             </tbody>
         </table>
     </div>

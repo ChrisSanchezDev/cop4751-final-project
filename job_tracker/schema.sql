@@ -64,14 +64,14 @@ INSERT INTO companies (company_name, industry, website, city, state) VALUES
 ('Digital Innovations', 'Software', 'www.digitalinnovations.com', 'San Francisco', 'California'),
 ('Smart Tech Group', 'AI/ML', 'www.smarttech.com', 'Boston', 'Massachusetts');
 
-INSERT INTO jobs (company_id, job_title, salary_min, salary_max, job_type, date_posted, requirements) VALUES
-(1, 'Software Developer', 70000, 90000, 'Full-time', '2025-01-15', '["Python", "SQL", "Git"]'),
-(1, 'Database Administrator', 75000, 95000, 'Full-time', '2025-01-10', NULL),
-(2, 'Data Analyst', 65000, 85000, 'Full-time', '2025-01-12', '["SQL", "Excel", "Tableau"]'),
-(3, 'Cloud Engineer', 80000, 100000, 'Full-time', '2025-01-08', NULL),
-(4, 'Junior Developer', 55000, 70000, 'Full-time', '2025-01-14', NULL),
-(4, 'Senior Developer', 95000, 120000, 'Full-time', '2025-01-14', NULL),
-(5, 'ML Engineer', 90000, 115000, 'Full-time', '2025-01-11', NULL);
+INSERT INTO jobs (company_id, job_title, salary_min, salary_max, job_type, date_posted, job_url, requirements) VALUES
+(1, 'Software Developer', 70000, 90000, 'Full-time', '2025-01-15', 'https://www.techsolutions.com/careers/software-developer', '["Python", "SQL", "Git"]'),
+(1, 'Database Administrator', 75000, 95000, 'Full-time', '2025-01-10', NULL, NULL),
+(2, 'Data Analyst', 65000, 85000, 'Full-time', '2025-01-12', 'https://www.dataanalytics.com/jobs/data-analyst', '["SQL", "Excel", "Tableau"]'),
+(3, 'Cloud Engineer', 80000, 100000, 'Full-time', '2025-01-08', NULL, NULL),
+(4, 'Junior Developer', 55000, 70000, 'Full-time', '2025-01-14', 'https://www.digitalinnovations.com/jobs/junior-developer', NULL),
+(4, 'Senior Developer', 95000, 120000, 'Full-time', '2025-01-14', NULL, NULL),
+(5, 'ML Engineer', 90000, 115000, 'Full-time', '2025-01-11', 'https://www.smarttech.com/careers/ml-engineer', NULL);
 
 INSERT INTO applications (job_id, application_date, status, resume_version, cover_letter_sent, interview_data) VALUES
 (1, '2025-01-16', 'Applied', 'v2.1', TRUE, NULL),
@@ -80,9 +80,9 @@ INSERT INTO applications (job_id, application_date, status, resume_version, cove
 (5, '2025-01-15', 'Applied', 'v2.1', TRUE, NULL),
 (7, '2025-01-12', 'Screening', 'v2.1', TRUE, '{"interview_rounds": 1, "interviewers": ["Emily Williams"], "technical_questions": ["Database normalization", "Transaction isolation"], "feedback": "Needs more experience with cloud platforms", "rating": 3}');
 
-INSERT INTO contacts (company_id, contact_name, email, title) VALUES
-(1, 'Sarah Johnson', 'sjohnson@techsolutions.com', 'HR Manager'),
-(2, 'Michael Chen', 'mchen@dataanalytics.com', 'Technical Recruiter'),
-(3, 'Emily Williams', 'ewilliams@cloudsystems.com', 'Hiring Manager'),
-(4, 'David Brown', NULL, 'Senior Developer'),
-(5, 'Lisa Garcia', 'lgarcia@smarttech.com', 'Talent Acquisition');
+INSERT INTO contacts (company_id, contact_name, email, phone, title, notes) VALUES
+(1, 'Sarah Johnson', 'sjohnson@techsolutions.com', '305-555-0142', 'HR Manager', 'Prefers email contact.'),
+(2, 'Michael Chen', 'mchen@dataanalytics.com', '512-555-0188', 'Technical Recruiter', NULL),
+(3, 'Emily Williams', 'ewilliams@cloudsystems.com', NULL, 'Hiring Manager', 'Met at the spring technology networking event.'),
+(4, 'David Brown', NULL, '415-555-0116', 'Senior Developer', NULL),
+(5, 'Lisa Garcia', 'lgarcia@smarttech.com', NULL, 'Talent Acquisition', NULL);
